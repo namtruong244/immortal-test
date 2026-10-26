@@ -22,7 +22,7 @@ include $(INCLUDE_DIR)/kernel.mk
 TARGET_CFLAGS += -DCONFIG_SUPPORT_OPENWRT
 
 # TODO(easymesh): source MTK viết cho GCC 8; GCC 14 coi các lỗi này là error.
-TARGET_CFLAGS += -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
+TARGET_CFLAGS += -Wno-error -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-int-conversion
 MAKE_FLAGS += CONFIG_SUPPORT_OPENWRT=y
 MAKE_FLAGS += UAPD_INCLUDE_PATH=$(LINUX_DIR)/include/uapi/linux/wapp
 MAKE_FLAGS += NL80211_INCLUDE_PATH=$(LINUX_DIR)/include/uapi/linux/mtk_nl80211_inc
