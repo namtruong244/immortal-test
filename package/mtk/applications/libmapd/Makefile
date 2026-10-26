@@ -35,6 +35,9 @@ include ./mapd_config
 
 TARGET_CFLAGS += $(FPIC)
 
+# TODO(easymesh): source MTK viết cho GCC 8; GCC 14 coi các lỗi này là error.
+TARGET_CFLAGS += -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types
+
 ifeq ($(CONFIG_MULTIAP),y)
 TARGET_CFLAGS += -DSUPPORT_MULTI_AP
 endif
