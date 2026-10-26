@@ -20,6 +20,14 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 TARGET_CFLAGS += -DCONFIG_SUPPORT_OPENWRT
+
+# TODO(easymesh): source MTK viết cho GCC 8; GCC 14 báo thêm nhiều warning/error mới.
+TARGET_CFLAGS += -Wno-error -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-int-conversion -fcommon
+
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	$(SED) 's/-Werror//g' $(PKG_BUILD_DIR)/Makefile
+endef
 MAKE_FLAGS += CONFIG_SUPPORT_OPENWRT=y
 
 PKG_KCONFIG:=RALINK_MT7620 RALINK_MT7621 RALINK_MT7628 MACH_MT7623 GE1_SGMII_FORCE_2500 P5_RGMII_TO_MT7530_MODE SUPPORT_OPENWRT MT753X_GSW
