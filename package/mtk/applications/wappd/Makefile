@@ -27,6 +27,12 @@ MAKE_FLAGS += CONFIG_SUPPORT_OPENWRT=y
 MAKE_FLAGS += UAPD_INCLUDE_PATH=$(LINUX_DIR)/include/uapi/linux/wapp
 MAKE_FLAGS += NL80211_INCLUDE_PATH=$(LINUX_DIR)/include/uapi/linux/mtk_nl80211_inc
 
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	# TODO(easymesh): Makefile nguồn ép -Werror; GCC 14 báo thêm nhiều warning mới.
+	$(SED) 's/-Werror//g' $(PKG_BUILD_DIR)/Makefile
+endef
+
 define Package/wapp
   SECTION:=MTK Properties
   CATEGORY:=MTK Properties
