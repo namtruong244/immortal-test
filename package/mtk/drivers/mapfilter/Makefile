@@ -9,6 +9,9 @@ include $(INCLUDE_DIR)/kernel.mk
 PKG_NAME:=mapfilter
 PKG_REVISION:=96f2afed
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_REVISION).tar.bz2
+PKG_SOURCE_URL:=file://$(TOPDIR)/easymesh/dl
+PKG_HASH:=3928c6614b84e74f1f1762cee61de8e422299e792f5f363dc369dfc0ed0f1714
+PKG_LICENSE:=BSD-3-Clause OR GPL-2.0-only
 
 include $(INCLUDE_DIR)/package.mk
 
