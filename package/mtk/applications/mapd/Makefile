@@ -20,6 +20,14 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/kernel.mk
 
 TARGET_CFLAGS += -DCONFIG_SUPPORT_OPENWRT
+
+# TODO(easymesh): source MTK viết cho GCC 8; GCC 14 báo thêm nhiều warning/error mới.
+TARGET_CFLAGS += -Wno-error -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-int-conversion -fcommon
+
+define Build/Prepare
+	$(call Build/Prepare/Default)
+	find $(PKG_BUILD_DIR) -name 'Makefile*' -exec $(SED) 's/-Werror//g' {} +
+endef
 MAKE_FLAGS += CONFIG_SUPPORT_OPENWRT=y
 
 PKG_BUILD_DEPENDS:=libmapd
