@@ -22,7 +22,7 @@ define KernelPackage/mapfilter
   CATEGORY:=MTK Properties
   TITLE:=MTK map filter
   FILES:=$(PKG_BUILD_DIR)/mapfilter.ko
-  AUTOLOAD:=$(call AutoProbe,mapfilter)
+  # No AUTOLOAD: easymesh init loads it only when mesh is enabled.
   SUBMENU:=Drivers
 endef
 
