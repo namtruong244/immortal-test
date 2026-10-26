@@ -1,41 +1,71 @@
 #!/bin/sh /etc/rc.common
-# EasyMesh entry point. role=disabled is a strict no-op.
+# EasyMesh entry point. role=disabled is a strict no-op for Wi-Fi.
+# Sequence: MapMode in .dat -> mapfilter -> wapp -> p1905_managerd -> mapd.
 
 START=82
 STOP=10
 USE_PROCD=1
 
-MAP_KEYS="MapMode"
-
 set_map_mode() {
-	# $1 = 0|1 ; patch every radio .dat
-	for f in $(ls /etc/wireless/mediatek/*.dat 2>/dev/null); do
+	# $1 = 0|1 ; patch every radio .dat, echo 1 if any file changed
+	local changed=0 f cur
+	for f in /etc/wireless/mediatek/*.dat; do
+		[ -f "$f" ] || continue
+		cur="$(wificonf -q -f "$f" get MapMode)"
+		[ "$cur" = "$1" ] && continue
 		wificonf -f "$f" set MapMode "$1"
+		changed=1
 	done
+	echo $changed
 }
 
 start_service() {
-	local role
+	local role devrole r1905
 	role="$(uci -q get easymesh.main.role)"
 	case "$role" in
 	controller|agent) ;;
-	*) return 0 ;;
+	*)
+		# Back to stock behaviour if mesh was on before.
+		[ "$(set_map_mode 0)" = 1 ] && wifi reload
+		return 0
+		;;
 	esac
 
-	# TODO(Phase 4): replace the stock script with an explicit wapp ->
-	# p1905_managerd -> mapd sequence once its inputs are mapped to br-lan/lan1-3.
-	set_map_mode 1
+	devrole="$(/usr/libexec/easymesh/prepare)" || return 1
+
+	# MapMode is only read by the driver at (re)load; wifi up merges into
+	# the .dat so the key survives.
+	[ "$(set_map_mode 1)" = 1 ] && { wifi reload; sleep 5; }
+
+	[ "$devrole" = 1 ] && r1905=0 || r1905=1
 	modprobe mapfilter 2>/dev/null
-	procd_open_instance
-	procd_set_param command /usr/bin/EasyMesh_openwrt.sh
-	procd_set_param env EASYMESH_ROLE="$role"
+
+	procd_open_instance wapp
+	procd_set_param command /usr/bin/wapp_openwrt.sh
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+
+	procd_open_instance p1905
+	procd_set_param command /bin/sh -c \
+		"sleep 3; exec p1905_managerd -r$r1905 -f /etc/map/1905d.cfg -F /etc/map/wts_bss_info_config"
+	procd_set_param respawn
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+
+	procd_open_instance mapd
+	procd_set_param command /bin/sh -c \
+		'sleep 5; exec mapd -I /etc/map/mapd_cfg -O /etc/mapd_strng.conf'
+	procd_set_param respawn
+	procd_set_param stdout 1
+	procd_set_param stderr 1
 	procd_close_instance
 }
 
 stop_service() {
 	killall -15 mapd p1905_managerd wapp bs20 2>/dev/null
 	rmmod mapfilter 2>/dev/null
-	[ "$(uci -q get easymesh.main.role)" = "disabled" ] && set_map_mode 0
 	return 0
 }
 

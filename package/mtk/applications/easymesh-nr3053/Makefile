@@ -33,11 +33,12 @@ define Build/Compile
 endef
 
 define Package/easymesh-nr3053/install
-	$(INSTALL_DIR) $(1)/etc/config $(1)/etc/init.d $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/etc/config $(1)/etc/init.d $(1)/usr/bin $(1)/usr/libexec/easymesh
 	$(INSTALL_CONF) ./files/etc/config/easymesh $(1)/etc/config/easymesh
 	$(INSTALL_BIN) ./files/etc/init.d/easymesh $(1)/etc/init.d/easymesh
 	$(INSTALL_BIN) ./files/usr/bin/wificonf $(1)/usr/bin/wificonf
 	$(INSTALL_BIN) ./files/usr/bin/easymesh $(1)/usr/bin/easymesh
+	$(INSTALL_BIN) ./files/usr/libexec/easymesh/prepare $(1)/usr/libexec/easymesh/prepare
 endef
 
 $(eval $(call BuildPackage,easymesh-nr3053))

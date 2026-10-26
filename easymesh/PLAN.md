@@ -390,8 +390,8 @@ stock) và ngược lại. Ghi version R2/R3 mỗi bên.
 | 2.3 1905daemon | Xong | Bỏ `-Werror` ở mọi Makefile, thêm `-fcommon`. `-I.../raeth` không tồn tại nhưng vô hại |
 | 2.4 mapd | Xong (link) | Object prebuilt GCC 8.4 link được với GCC 14. Phải bật `CONFIG_MTK_MAP_R2_6E_SUPPORT=y` (prebuilt build với `MAP_6E_SUPPORT`; cờ này đổi layout UAPI nên driver `mt_wifi` cũng build theo — đã build lại OK). `mapd_cli` chạy dưới qemu-user, loader không crash. Chưa chạy trên thiết bị |
 | 2.5 mapfilter | Xong | Patch 001: bỏ `cb_mutex`, `sockptr_t` cho `set`. `.ko` vermagic 6.12.112, 49 symbol đều có trong `Module.symvers`. Chưa `insmod` thử |
-| 3 Runtime deps | Một phần | `kvcedit` có cú pháp `-f FILE get/set KEY VALUE` giống `wificonf` → shim là wrapper mỏng. Chưa chạy thử |
-| 4 Glue | Một phần | Có skeleton `easymesh-nr3053` (UCI, init, shim `wificonf` → `kvcedit`, `easymesh status`); chưa build/test. Chưa xử lý xung đột `mtwifi-cfg-ucode` (4.3) và bridge/DSA (4.4) |
+| 3 Runtime deps | Xong (host) | Shim `wificonf` → `kvcedit` đã test qua qemu-user: `set` (kể cả giá trị rỗng, file chưa có), `get`, `unset`, `batch`. Lưu ý `-f` phải đứng trước lệnh. `luasocket`, `datconf-lua` build được. Chưa chạy trên máy thật |
+| 4 Glue | Xong (build) | `easymesh-nr3053` build được, không đụng file với `mapd` (init của mapd đổi thành `easymesh-mtk`). Init chạy tuần tự MapMode → mapfilter → wapp → p1905_managerd → mapd, config sinh bởi `/usr/libexec/easymesh/prepare` (đã test host). 4.3: `mtwifi-cfg-ucode` dùng `ctx.merge()` nên khóa `MapMode` không bị ghi đè, không cần patch. Mặc định tắt: `wapp.enable=0`, mapfilter không autoload. Chưa test trên máy thật (bridge/DSA 4.4: dùng lan1–3/wan/br-lan theo UCI, cần kiểm chứng Phase 5) |
 | 5 Test HW | Chưa | |
 | 6 Stock interop | Chưa | |
 | 7 Tài liệu | Một phần | Đã sửa mục archive/license/script trong docs; còn lại sau Phase 5 |

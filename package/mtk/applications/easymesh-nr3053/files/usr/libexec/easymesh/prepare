@@ -1,0 +1,47 @@
+#!/bin/sh
+# Generate /etc/map/{mapd_cfg,1905d.cfg} from /etc/config/easymesh.
+# Replaces prepare_mapd_config/prepare_1905_config of the stock MTK script.
+
+role="$(uci -q get easymesh.main.role)"
+lan="$(uci -q get easymesh.main.lan_ifaces)"
+wan="$(uci -q get easymesh.main.wan_iface)"
+[ -n "$wan" ] || wan="$(uci -q get network.wan.device)"
+[ -n "$wan" ] || wan=wan
+[ -n "$lan" ] || lan="$(uci -q get network.@device[0].ports)"
+[ -n "$lan" ] || lan="lan1 lan2 lan3"
+
+case "$role" in
+controller) devrole=1 ;;
+agent) devrole=2 ;;
+*) echo "easymesh: role '$role' is not active" >&2; exit 1 ;;
+esac
+
+MAPD=/etc/map/mapd_cfg
+D1905=/etc/map/1905d.cfg
+
+cp /etc/map/mapd_default.cfg "$MAPD"
+# user overrides: KEY=VALUE lines
+if [ -s /etc/map/mapd_user.cfg ]; then
+	grep -E '^[A-Za-z0-9_]+=' /etc/map/mapd_user.cfg | wificonf -f "$MAPD" batch
+fi
+wificonf -f "$MAPD" set DeviceRole "$devrole"
+wificonf -f "$MAPD" set lan_interface "$lan"
+wificonf -f "$MAPD" set wan_interface "$wan"
+
+# 1905: bridge, lan/wan entries and root/agent flags
+br="$(uci -q get network.@device[0].name)"
+[ -n "$br" ] || br=br-lan
+sed -i -e '/^lan=/d' -e '/^wan=/d' "$D1905"
+sed -i "s/^br_inf=.*/br_inf=$br/" "$D1905"
+for i in $lan; do echo "lan=$i" >> "$D1905"; done
+# bridge mode: WAN port joins the bridge too (as in stock script, mode=1)
+if [ "$(wificonf -q -f "$MAPD" get mode)" = "1" ]; then
+	echo "wan=$wan" >> "$D1905"
+	brctl addif "$br" "$wan" 2>/dev/null || ip link set "$wan" master "$br" 2>/dev/null
+fi
+if [ "$devrole" = 1 ]; then
+	sed -i -e 's/^map_agent=.*/map_agent=0/' -e 's/^map_root=.*/map_root=1/' "$D1905"
+else
+	sed -i -e 's/^map_agent=.*/map_agent=1/' -e 's/^map_root=.*/map_root=0/' "$D1905"
+fi
+echo "$devrole"
