@@ -384,12 +384,12 @@ stock) và ngược lại. Ghi version R2/R3 mỗi bên.
 |---|---|---|
 | 0 Baseline | Bỏ qua | Firmware gốc đã chạy ổn |
 | Chuẩn bị branch | Xong | Import recipe + archive nguyên văn |
-| 1 Source + defconfig | Một phần | Recipe và defconfig đã sửa/commit. Chưa kiểm được `make download`, `.config`, `verify-viettel-config.sh` vì máy chưa có make/gcc |
-| 2.1 libmapd | Chưa | |
-| 2.2 wappd | Chưa | |
-| 2.3 1905daemon | Chưa | |
-| 2.4 mapd | Chưa | |
-| 2.5 mapfilter | Chưa | |
+| 1 Source + defconfig | Xong | Build trong VM Colima `immortal` (Ubuntu 24.04). `make download` qua `file://` OK, hash khớp, `.config` đủ symbol, `verify-viettel-config.sh` pass |
+| 2.1 libmapd | Xong | Patch `Makefile` nguồn (truyền CFLAGS), hạ lỗi GCC 14 thành warning |
+| 2.2 wappd | Xong | Patch 002 (bỏ `EVP_PKEY_get0_EC_KEY` tự định nghĩa, OpenSSL 3), 003 (`WMODE_CAP_5G/2G`); bỏ `-Werror`, thêm `-fcommon`. `NEEDED`: kvcutil, ssl, crypto |
+| 2.3 1905daemon | Xong | Bỏ `-Werror` ở mọi Makefile, thêm `-fcommon`. `-I.../raeth` không tồn tại nhưng vô hại |
+| 2.4 mapd | Xong (link) | Object prebuilt GCC 8.4 link được với GCC 14. Phải bật `CONFIG_MTK_MAP_R2_6E_SUPPORT=y` (prebuilt build với `MAP_6E_SUPPORT`; cờ này đổi layout UAPI nên driver `mt_wifi` cũng build theo — đã build lại OK). `mapd_cli` chạy dưới qemu-user, loader không crash. Chưa chạy trên thiết bị |
+| 2.5 mapfilter | Xong | Patch 001: bỏ `cb_mutex`, `sockptr_t` cho `set`. `.ko` vermagic 6.12.112, 49 symbol đều có trong `Module.symvers`. Chưa `insmod` thử |
 | 3 Runtime deps | Một phần | `kvcedit` có cú pháp `-f FILE get/set KEY VALUE` giống `wificonf` → shim là wrapper mỏng. Chưa chạy thử |
 | 4 Glue | Một phần | Có skeleton `easymesh-nr3053` (UCI, init, shim `wificonf` → `kvcedit`, `easymesh status`); chưa build/test. Chưa xử lý xung đột `mtwifi-cfg-ucode` (4.3) và bridge/DSA (4.4) |
 | 5 Test HW | Chưa | |
