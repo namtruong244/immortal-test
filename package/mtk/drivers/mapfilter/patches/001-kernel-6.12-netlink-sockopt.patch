@@ -1,0 +1,28 @@
+diff -ru mapfilter.orig/mtkmapfilter.c mapfilter/mtkmapfilter.c
+--- mapfilter.orig/mtkmapfilter.c	2025-04-08 12:01:12.000000000 +0700
++++ mapfilter/mtkmapfilter.c	2026-10-26 22:54:30.100494751 +0700
+@@ -906,7 +906,6 @@
+ 	.groups = 0,
+ 	.flags = 0,
+ 	.input = recv_nlmsg,
+-	.cb_mutex = NULL,
+ 	.bind = NULL,
+ };
+ #endif
+@@ -941,14 +940,14 @@
+ #define MAP_SO_MAX (MAP_SO_BASE + 1)
+ 
+ static int do_map_set_ctl(struct sock *sk, int cmd,
+-		void __user *user, unsigned int len)
++		sockptr_t user, unsigned int len)
+ {
+ 	int ret = 0;
+ 
+ 	pr_info("do_map_set_ctl==>cmd(%d)\n", cmd);
+ 	switch (cmd) {
+ 	case MAP_SET_ALMAC:
+-		if (copy_from_user(almac, user, ETH_ALEN) != 0) {
++		if (copy_from_sockptr(almac, user, ETH_ALEN) != 0) {
+ 			ret = -EFAULT;
+ 			pr_info("do_map_set_ctl==>copy_from_user fail\n");
+ 			break;
