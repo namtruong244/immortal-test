@@ -26,7 +26,7 @@ TARGET_CFLAGS += -Wno-error -Wno-implicit-function-declaration -Wno-incompatible
 
 define Build/Prepare
 	$(call Build/Prepare/Default)
-	$(SED) 's/-Werror//g' $(PKG_BUILD_DIR)/Makefile
+	find $(PKG_BUILD_DIR) -name 'Makefile*' -exec $(SED) 's/-Werror//g' {} +
 endef
 MAKE_FLAGS += CONFIG_SUPPORT_OPENWRT=y
 
