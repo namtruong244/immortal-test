@@ -1,0 +1,12 @@
+#!/bin/sh
+# easymesh status | role-summary
+
+[ "$1" = "status" ] || { echo "usage: easymesh status"; exit 1; }
+
+echo "role:     $(uci -q get easymesh.main.role)"
+echo "backhaul: $(uci -q get easymesh.main.backhaul)"
+for p in wapp p1905_managerd mapd; do
+	if pidof "$p" >/dev/null; then echo "$p: running"; else echo "$p: stopped"; fi
+done
+lsmod | grep -q '^mapfilter' && echo "mapfilter: loaded" || echo "mapfilter: not loaded"
+command -v mapd_cli >/dev/null && mapd_cli /tmp/mapd_ctrl dump_topology_v1 2>/dev/null

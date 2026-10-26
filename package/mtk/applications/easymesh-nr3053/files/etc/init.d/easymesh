@@ -1,0 +1,44 @@
+#!/bin/sh /etc/rc.common
+# EasyMesh entry point. role=disabled is a strict no-op.
+
+START=82
+STOP=10
+USE_PROCD=1
+
+MAP_KEYS="MapMode"
+
+set_map_mode() {
+	# $1 = 0|1 ; patch every radio .dat
+	for f in $(ls /etc/wireless/mediatek/*.dat 2>/dev/null); do
+		wificonf -f "$f" set MapMode "$1"
+	done
+}
+
+start_service() {
+	local role
+	role="$(uci -q get easymesh.main.role)"
+	case "$role" in
+	controller|agent) ;;
+	*) return 0 ;;
+	esac
+
+	# TODO(Phase 4): replace the stock script with an explicit wapp ->
+	# p1905_managerd -> mapd sequence once its inputs are mapped to br-lan/lan1-3.
+	set_map_mode 1
+	modprobe mapfilter 2>/dev/null
+	procd_open_instance
+	procd_set_param command /usr/bin/EasyMesh_openwrt.sh
+	procd_set_param env EASYMESH_ROLE="$role"
+	procd_close_instance
+}
+
+stop_service() {
+	killall -15 mapd p1905_managerd wapp bs20 2>/dev/null
+	rmmod mapfilter 2>/dev/null
+	[ "$(uci -q get easymesh.main.role)" = "disabled" ] && set_map_mode 0
+	return 0
+}
+
+service_triggers() {
+	procd_add_reload_trigger easymesh
+}

@@ -1,0 +1,17 @@
+#!/bin/sh
+# wificonf shim: MTK scripts call `wificonf -f FILE get|set|unset KEY [VALUE]`.
+# kvcedit takes the same arguments; only difference is that it needs the file
+# to exist before `set`.
+
+prev=
+file=
+for a in "$@"; do
+	[ "$prev" = "-f" ] && file="$a"
+	prev="$a"
+done
+
+case " $* " in
+*" set "*) [ -n "$file" ] && [ ! -e "$file" ] && : > "$file" ;;
+esac
+
+exec /usr/bin/kvcedit "$@"

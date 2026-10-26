@@ -71,7 +71,7 @@ define Package/mapd/install
 	$(CP) $(PKG_BUILD_DIR)/mapd_user.cfg $(1)/etc/map
 	$(CP) $(PKG_BUILD_DIR)/mapd_default.cfg  $(1)/etc/map
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/easymesh_init $(1)/etc/init.d/easymesh
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/easymesh_init $(1)/etc/init.d/easymesh-mtk
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/easymesh_bridge_init $(1)/etc/init.d/easymesh_bridge
 endef
 
