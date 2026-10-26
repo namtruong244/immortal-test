@@ -1,0 +1,30 @@
+diff -ru wappd.orig/dpp/dpp.c wappd/dpp/dpp.c
+--- wappd.orig/dpp/dpp.c	2025-04-08 12:01:11.000000000 +0700
++++ wappd/dpp/dpp.c	2026-10-26 22:26:01.534118844 +0700
+@@ -11609,15 +11609,6 @@
+ #ifdef DPP_R2_SUPPORT
+ #ifdef DPP_R2_RECONFIG
+ #ifndef OPENSSL_NO_EC
+-EC_KEY * EVP_PKEY_get0_EC_KEY(EVP_PKEY *pkey)
+-{
+-	if (EVP_PKEY_base_id(pkey) != EVP_PKEY_EC) {
+-		wpa_printf(MSG_ERROR, "DPP: Could not create EVP_PKEY_base_id");
+-		return NULL;
+-	}
+-
+-	return pkey->pkey.ec;
+-}
+ #endif /* OPENSSL_NO_EC */
+ 
+ struct dpp_reconfig_id * dpp_gen_reconfig_id(const u8 *csign_key,
+diff -ru wappd.orig/dpp/dpp.h wappd/dpp/dpp.h
+--- wappd.orig/dpp/dpp.h	2025-04-08 12:01:11.000000000 +0700
++++ wappd/dpp/dpp.h	2026-10-26 22:26:01.533118826 +0700
+@@ -1261,7 +1261,6 @@
+ 				       const u8 *buf, size_t len);
+ void dpp_auth_fail(struct dpp_authentication *auth, const char *txt);
+ void dpp_debug_print_key(const char *title, EVP_PKEY *key);
+-EC_KEY * EVP_PKEY_get0_EC_KEY(EVP_PKEY *pkey);
+ 
+ char * wapp_dpp_get_scan_channel_list(struct wifi_app *wapp);
+ 
