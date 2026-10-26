@@ -1,0 +1,93 @@
+name: EasyMesh Build
+
+# Manual-only build of the NR3053 EasyMesh image (see easymesh/PLAN.md).
+# Not part of the release flow; artifacts are short-lived and repo-private.
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: easymesh-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-firmware:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Maximize build disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force 2>/dev/null || true
+          df -h /
+
+      - name: Install build dependencies
+        run: bash scripts/install-deps.sh
+
+      - name: Restore toolchain cache
+        id: cache-toolchain
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            staging_dir/host
+            staging_dir/toolchain-aarch64_cortex-a53_gcc-*
+          key: openwrt-toolchain-filogic-aarch64-ubuntu2604-${{ hashFiles('feeds.conf.default') }}-v1
+          restore-keys: |
+            openwrt-toolchain-filogic-aarch64-ubuntu2604-
+
+      - name: Restore download cache
+        uses: actions/cache/restore@v5
+        with:
+          path: dl
+          key: openwrt-dl-filogic-ubuntu2604-${{ hashFiles('feeds.conf.default') }}-v1-${{ github.run_id }}
+          restore-keys: |
+            openwrt-dl-filogic-ubuntu2604-${{ hashFiles('feeds.conf.default') }}-v1-
+
+      - name: Build firmware (EasyMesh config)
+        env:
+          FIRMWARE_VERSION: easymesh-${{ github.sha }}
+        run: bash scripts/build-viettel.sh defconfig/viettel-nr3053-easymesh.config
+
+      - name: Upload build logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: easymesh-logs-${{ github.sha }}
+          path: logs/
+          if-no-files-found: ignore
+          retention-days: 3
+
+      - name: Upload firmware artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: immortalwrt-nr3053-easymesh-${{ github.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Free disk before cache save
+        if: always()
+        run: |
+          rm -rf build_dir bin tmp logs feeds
+          rm -rf staging_dir/target-* staging_dir/packages
+
+      - name: Save toolchain cache
+        if: always() && steps.cache-toolchain.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            staging_dir/host
+            staging_dir/toolchain-aarch64_cortex-a53_gcc-*
+          key: openwrt-toolchain-filogic-aarch64-ubuntu2604-${{ hashFiles('feeds.conf.default') }}-v1
+
+      - name: Save download cache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: dl
+          key: openwrt-dl-filogic-ubuntu2604-${{ hashFiles('feeds.conf.default') }}-v1-${{ github.run_id }}
