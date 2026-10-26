@@ -384,14 +384,14 @@ stock) và ngược lại. Ghi version R2/R3 mỗi bên.
 |---|---|---|
 | 0 Baseline | Bỏ qua | Firmware gốc đã chạy ổn |
 | Chuẩn bị branch | Xong | Import recipe + archive nguyên văn |
-| 1 Source + defconfig | Chưa | |
+| 1 Source + defconfig | Một phần | Recipe và defconfig đã sửa/commit. Chưa kiểm được `make download`, `.config`, `verify-viettel-config.sh` vì máy chưa có make/gcc |
 | 2.1 libmapd | Chưa | |
 | 2.2 wappd | Chưa | |
 | 2.3 1905daemon | Chưa | |
 | 2.4 mapd | Chưa | |
 | 2.5 mapfilter | Chưa | |
-| 3 Runtime deps | Chưa | |
-| 4 Glue | Chưa | |
+| 3 Runtime deps | Một phần | `kvcedit` có cú pháp `-f FILE get/set KEY VALUE` giống `wificonf` → shim là wrapper mỏng. Chưa chạy thử |
+| 4 Glue | Một phần | Có skeleton `easymesh-nr3053` (UCI, init, shim `wificonf` → `kvcedit`, `easymesh status`); chưa build/test. Chưa xử lý xung đột `mtwifi-cfg-ucode` (4.3) và bridge/DSA (4.4) |
 | 5 Test HW | Chưa | |
 | 6 Stock interop | Chưa | |
-| 7 Tài liệu | Chưa | |
+| 7 Tài liệu | Một phần | Đã sửa mục archive/license/script trong docs; còn lại sau Phase 5 |

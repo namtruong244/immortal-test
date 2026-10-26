@@ -52,22 +52,22 @@ Repository công khai sau chứa recipe khớp driver 7.6.7.3:
 - Driver pin: `mt79xx_20250408-705eb4.tar.xz`, version `7.6.7.3`.
 
 Các recipe liên quan là `1905daemon`, `mapd`, `wappd`, `libmapd` và
-`mapfilter`. Tại revision trên, recipe chỉ khai báo tên và revision của các
-archive cần build; không có `PKG_SOURCE_URL` và các archive đó không nằm trong
-tree Git. Vì vậy recipe là tài liệu hữu ích cho dependency, cách đóng gói và
-integration, nhưng chưa phải source hoàn chỉnh để tái lập build. Điều này chứng
-minh stack cùng thế hệ driver tồn tại; nó không tự chứng minh tương thích với
-kernel 6.12.
+`mapfilter`. Năm archive tương ứng **có** nằm trong tree Git upstream (thư mục
+`dl/`) và đã được vendor vào `easymesh/dl/` của branch này (hash trong
+`easymesh/SHA256SUMS`). Recipe tại revision trên không khai báo
+`PKG_SOURCE_URL`; branch này trỏ nó tới `file://$(TOPDIR)/easymesh/dl`. Điều
+này chứng minh stack cùng thế hệ driver tồn tại; nó không tự chứng minh tương
+thích với kernel 6.12.
 
 ## Ràng buộc license và ABI
 
-Một số recipe mang nhãn `MTK Property Software`; riêng recipe `mapfilter` có
-header mâu thuẫn giữa `All rights reserved` và boilerplate GPL. Chưa có archive
-gốc nên chưa thể xác minh license của phần source thực thi chỉ từ các recipe.
-Không đưa source archive, binary, hay firmware chứa chúng vào repository/release
-public cho đến khi kiểm tra license đi kèm archive hoặc có quyền phân phối phù
-hợp. Đây không phải kết luận rằng stack không thể dùng hợp pháp; nó xác định
-thông tin còn thiếu trước khi phát hành công khai.
+Đã kiểm file `LICENSE` trong archive: `wappd`, `1905daemon` và `mapd` mang
+license độc quyền MediaTek ("confidential and proprietary"; cấm sao chép/phân
+phối). `libmapd` là source MTK, ghi `Proprietary` trong recipe. `mapfilter` khai
+báo `MODULE_LICENSE("Dual BSD/GPL")`. Archive `mapd` còn chứa object build sẵn
+(aarch64, GCC 8.4) không có source. Không đưa source archive, binary, hay
+firmware chứa chúng vào repository/release public; branch `feature/easymesh-*`
+không được merge vào `main` hay mở PR.
 
 Các recipe tìm được viết cho OpenWrt 21.02/kernel 5.4. Port sang fork hiện tại
 cần kiểm tra và có thể phải sửa:
@@ -83,17 +83,9 @@ hoặc ABI, khó audit và không phù hợp để phát hành.
 
 ### Kiểm kê nguồn trước khi port
 
-Khi có archive từ SDK hoặc nguồn được cấp quyền, kiểm tra chúng mà không giải
-nén hay chép vào repository:
-
-```bash
-./scripts/audit-easymesh-sources.sh /duong-dan/toi/sdk-sources
-```
-
-Script yêu cầu đúng năm archive theo revision ở trên, in SHA-256 và liệt kê file
-license/notice có trong từng archive. Kết quả `passed` chỉ xác nhận bộ input
-đầy đủ để bắt đầu port; người đưa source vào vẫn phải xác nhận điều khoản cấp
-phép phù hợp với việc build và phát hành firmware.
+Kiểm hash archive bằng `cd easymesh && sha256sum -c SHA256SUMS`. Script
+`scripts/audit-easymesh-sources.sh` không tồn tại; kế hoạch chi tiết nằm trong
+[easymesh/PLAN.md](../easymesh/PLAN.md).
 
 ## Lộ trình triển khai khi có quyền dùng SDK
 
