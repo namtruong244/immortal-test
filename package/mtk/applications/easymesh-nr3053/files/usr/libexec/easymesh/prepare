@@ -25,6 +25,16 @@ if [ -s /etc/map/mapd_user.cfg ]; then
 	grep -E '^[A-Za-z0-9_]+=' /etc/map/mapd_user.cfg | wificonf -f "$MAPD" batch
 fi
 wificonf -f "$MAPD" set DeviceRole "$devrole"
+
+# Vendor default is mode=1 (bridge: WAN joins br-lan), which breaks a routed
+# WAN such as PPPoE. Default to router mode; bridge only on explicit request.
+mode="$(uci -q get easymesh.main.mode)"
+[ "$mode" = bridge ] && mode=1 || mode=0
+if [ "$mode" = 1 ] && [ "$(uci -q get network.wan.proto)" = pppoe ]; then
+	echo "easymesh: network.wan.proto=pppoe, ignoring mode=bridge" >&2
+	mode=0
+fi
+wificonf -f "$MAPD" set mode "$mode"
 wificonf -f "$MAPD" set lan_interface "$lan"
 wificonf -f "$MAPD" set wan_interface "$wan"
 
@@ -35,7 +45,7 @@ sed -i -e '/^lan=/d' -e '/^wan=/d' "$D1905"
 sed -i "s/^br_inf=.*/br_inf=$br/" "$D1905"
 for i in $lan; do echo "lan=$i" >> "$D1905"; done
 # bridge mode: WAN port joins the bridge too (as in stock script, mode=1)
-if [ "$(wificonf -q -f "$MAPD" get mode)" = "1" ]; then
+if [ "$mode" = 1 ]; then
 	echo "wan=$wan" >> "$D1905"
 	brctl addif "$br" "$wan" 2>/dev/null || ip link set "$wan" master "$br" 2>/dev/null
 fi

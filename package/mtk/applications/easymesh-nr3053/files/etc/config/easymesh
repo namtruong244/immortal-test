@@ -1,6 +1,7 @@
 config easymesh 'main'
 	option role 'disabled'		# disabled | controller | agent
 	option backhaul 'auto'
+	option mode 'router'
 	# Interfaces handed to 1905 as LAN/WAN. Empty = autodetect.
 	option lan_ifaces ''
 	option wan_iface ''
